@@ -18,7 +18,7 @@ pub fn spawn(session: Session) {
 
     Arbiter::spawn(async move {
         let wss_url = format!(
-            "http://localhost:9000/api/cast/ws/{}?token={}",
+            "http://localhost:9000/api/session/ws/{}?token={}",
             &session.id, session.token
         );
 

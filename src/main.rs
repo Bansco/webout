@@ -19,7 +19,7 @@ impl Session {
 
 fn main() {
     // TODO: Use actix HTTP client to avoid an extra dependency
-    let session: Session = reqwest::blocking::get("http://localhost:9000/api/cast/create")
+    let session: Session = reqwest::blocking::get("http://localhost:9000/api/session/create")
         .unwrap()
         .json()
         .unwrap();
