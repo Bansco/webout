@@ -8,7 +8,7 @@ mod ws_client;
 pub struct Session {
     id: String,
     url: String,
-    token: String
+    token: String,
 }
 
 impl Session {
@@ -28,11 +28,19 @@ fn main() {
 
     File::create(&session_log_name).expect("Failed to create webout file");
 
+    println!("Webout session started");
+    println!("  View online: {}", session.url); // TODO copy id / url to clipboard
+    println!("  Session id:  {}\n", session.id);
+
     let _sender_system = std::thread::spawn(move || sender::system::spawn(session.clone()));
 
-    // -F: Immediately flush output after each write.
+    // -F: Immediately flush output after each write (-f on linux).
     // -q: Run in quiet mode, omit the start, stop and command status messages.
-    let cmd = format!("script -F -q {}", &session_log_name);
+    let cmd = if cfg!(target_os = "linux") {
+        format!("script -f -q {}", &session_log_name)
+    } else {
+        format!("script -F -q {}", &session_log_name)
+    };
     let command = std::process::Command::new("sh").arg("-c").arg(cmd).spawn();
 
     match command {

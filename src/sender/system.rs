@@ -46,7 +46,7 @@ pub fn spawn(session: Session) {
         let framed_stream = FramedRead::new(stdout, BytesCodec::new());
 
         let (sink, stream) = framed.split();
-        let sender = Sender::create(|ctx| {
+        let _sender = Sender::create(|ctx| {
             Sender::add_stream(stream, ctx);
             Sender::add_stream(framed_stream, ctx);
             Sender {
