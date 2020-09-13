@@ -1,50 +1,47 @@
-use std::process::Command;
-use std::thread;
-use notify::{Watcher, RecursiveMode, watcher};
-use notify::{RawEvent, raw_watcher};
-use std::sync::mpsc::channel;
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 
+mod sender;
+mod ws_client;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Session {
+    id: String,
+    url: String,
+    token: String
+}
+
+impl Session {
+    fn get_log_name(&self) -> String {
+        format!("{}.webout", &self.id)
+    }
+}
+
 fn main() {
-    // Test file to simulate notifications
-    let mut file = File::create("watch.log").unwrap();
+    // TODO: Use actix HTTP client to avoid an extra dependency
+    let session: Session = reqwest::blocking::get("http://localhost:9000/api/cast/create")
+        .unwrap()
+        .json()
+        .unwrap();
+
+    let session_log_name = session.get_log_name();
+
+    File::create(&session_log_name).expect("Failed to create webout file");
+
+    let _sender_system = std::thread::spawn(move || sender::system::spawn(session.clone()));
 
     // -F: Immediately flush output after each write.
     // -q: Run in quiet mode, omit the start, stop and command status messages.
-    let script = "script -F -q terminal.log";
-    let command = Command::new("sh")
-        .arg("-c")
-        .arg(script)
-        .spawn();
+    let cmd = format!("script -F -q {}", &session_log_name);
+    let command = std::process::Command::new("sh").arg("-c").arg(cmd).spawn();
 
-    thread::spawn(move || {
-        let (tx, rx) = channel();
-
-        // Create a watcher object, delivering debounced events. The notification
-        // back-end is selected based on the platform.
-        let mut watcher = raw_watcher(tx).unwrap();
-
-        // Add a path to be watched. The files will be monitored for changes.
-        watcher.watch("./terminal.log", RecursiveMode::Recursive).unwrap();
-
-
-        loop {
-            match rx.recv() {
-                Ok(RawEvent{path: Some(path), op: Ok(op), cookie}) => {
-                    let msg = format!("{:?} {:?} ({:?})", op, path, cookie);
-                    // file.write_all(msg.as_bytes()).unwrap()
-                    // Notify
-                },
-                Ok(event) => println!("broken event: {:?}", event),
-                Err(e) => println!("watch error: {:?}", e),
-            }
+    match command {
+        Ok(mut child) => {
+            child.wait().expect("Failed to start webout client");
+            println!("Webout session ended!");
         }
-    });
-
-    if let Ok(mut child) = command {
-        child.wait().expect("command wasn't running");
-        println!("Child has finished its execution!");
-    } else {
-        println!("ls command didn't start");
+        Err(error) => {
+            println!("Failed to run webout. Error {}", error);
+        }
     }
 }
