@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 
-mod sender;
+mod emitter;
 mod ws_client;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,7 +32,7 @@ fn main() {
     println!("  View online: {}", session.url); // TODO copy id / url to clipboard
     println!("  Session id:  {}\n", session.id);
 
-    let _sender_system = std::thread::spawn(move || sender::system::spawn(session.clone()));
+    let emitter_system = std::thread::spawn(move || emitter::system::spawn(session.clone()));
 
     // -F: Immediately flush output after each write (-f on linux).
     // -q: Run in quiet mode, omit the start, stop and command status messages.
@@ -42,6 +42,8 @@ fn main() {
         format!("script -F -q {}", &session_log_name)
     };
     let command = std::process::Command::new("sh").arg("-c").arg(cmd).spawn();
+
+    emitter_system.join().unwrap();
 
     match command {
         Ok(mut child) => {

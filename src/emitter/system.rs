@@ -8,13 +8,13 @@ use std::process::Stdio;
 use tokio::process::Command;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
-use crate::sender::actor::Sender;
+use crate::emitter::actor::Emitter;
 use crate::ws_client;
 use crate::Session;
 
 pub fn spawn(session: Session) {
     let session_log_name = session.get_log_name();
-    let system = System::new("webout-sender-client");
+    let system = System::new("webout-emitter-client");
 
     Arbiter::spawn(async move {
         let wss_url = format!(
@@ -46,10 +46,10 @@ pub fn spawn(session: Session) {
         let framed_stream = FramedRead::new(stdout, BytesCodec::new());
 
         let (sink, stream) = framed.split();
-        let _sender = Sender::create(|ctx| {
-            Sender::add_stream(stream, ctx);
-            Sender::add_stream(framed_stream, ctx);
-            Sender {
+        let _emitter = Emitter::create(|ctx| {
+            Emitter::add_stream(stream, ctx);
+            Emitter::add_stream(framed_stream, ctx);
+            Emitter {
                 id: session.id,
                 sink: SinkWrite::new(sink, ctx),
             }

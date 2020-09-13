@@ -10,12 +10,12 @@ use bytes::Bytes;
 use futures::stream::SplitSink;
 use std::time::Duration;
 
-pub struct Sender {
+pub struct Emitter {
     pub id: String,
     pub sink: SinkWrite<Message, SplitSink<Framed<BoxedSocket, Codec>, Message>>,
 }
 
-impl Actor for Sender {
+impl Actor for Emitter {
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Context<Self>) {
@@ -32,7 +32,7 @@ impl Actor for Sender {
     }
 }
 
-impl Sender {
+impl Emitter {
     fn hb(&self, ctx: &mut Context<Self>) {
         ctx.run_later(Duration::new(5, 0), |act, ctx| {
             act.sink
@@ -52,7 +52,7 @@ impl Sender {
 struct ClientCommand(String);
 
 /// Handle stdin commands
-impl Handler<ClientCommand> for Sender {
+impl Handler<ClientCommand> for Emitter {
     type Result = ();
 
     fn handle(&mut self, msg: ClientCommand, _ctx: &mut Context<Self>) {
@@ -61,7 +61,7 @@ impl Handler<ClientCommand> for Sender {
 }
 
 /// Handle server websocket messages
-impl StreamHandler<Result<Frame, WsProtocolError>> for Sender {
+impl StreamHandler<Result<Frame, WsProtocolError>> for Emitter {
     fn handle(&mut self, msg: Result<Frame, WsProtocolError>, _: &mut Context<Self>) {
         if let Ok(Frame::Text(txt)) = msg {
             println!("Server: {:?}", txt)
@@ -78,21 +78,21 @@ impl StreamHandler<Result<Frame, WsProtocolError>> for Sender {
     }
 }
 
-impl actix::io::WriteHandler<WsProtocolError> for Sender {}
+impl actix::io::WriteHandler<WsProtocolError> for Emitter {}
 
 /// Handle server websocket messages
-impl StreamHandler<Result<bytes::BytesMut, std::io::Error>> for Sender {
+impl StreamHandler<Result<bytes::BytesMut, std::io::Error>> for Emitter {
     fn handle(&mut self, msg: Result<bytes::BytesMut, std::io::Error>, _: &mut Context<Self>) {
         let bytes = msg.expect("Failed to read bytes");
         self.sink.write(Message::Binary(bytes.into())).unwrap();
     }
 
     fn started(&mut self, _ctx: &mut Context<Self>) {
-        println!("Log Sender connected");
+        println!("Log Emitter connected");
     }
 
     fn finished(&mut self, ctx: &mut Context<Self>) {
-        println!("Log Senders disconnected");
+        println!("Log Emitters disconnected");
         ctx.stop()
     }
 }
