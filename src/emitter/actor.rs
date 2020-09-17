@@ -74,7 +74,7 @@ impl StreamHandler<Result<Frame, WsProtocolError>> for Emitter {
 
     fn finished(&mut self, ctx: &mut Context<Self>) {
         println!("Websocket disconnected");
-        ctx.stop()
+        ctx.stop();
     }
 }
 
@@ -93,6 +93,6 @@ impl StreamHandler<Result<bytes::BytesMut, std::io::Error>> for Emitter {
 
     fn finished(&mut self, ctx: &mut Context<Self>) {
         println!("Log Emitters disconnected");
-        ctx.stop()
+        ctx.stop();
     }
 }

@@ -14,7 +14,7 @@ use crate::Session;
 
 pub fn spawn(session: Session) {
     let session_log_name = session.get_log_name();
-    let system = System::new("webout-emitter-client");
+    let system = System::new("webout-emitter-system");
 
     Arbiter::spawn(async move {
         let wss_url = format!(
