@@ -3,8 +3,8 @@ name = "webout"
 version = "0.1.0"
 authors = ["ndelvalle <nicolas.delvalle@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+readme = "README.md"
+repository = "https://github.com/bansco/webout"
 
 [dependencies]
 notify = "4.0.15"
@@ -18,7 +18,7 @@ futures = "0.3.5"
 bytes = "0.5.6"
 actix-rt = "1.1.1"
 actix-web-actors = "2.0.0"
-tokio = { version = "0.2.22", features = ["process"] }
+tokio = { version = "0.2.22", features = ["process", "fs", "macros", "blocking"] }
 tokio-util = { version = "0.3.1", features = ["codec"] }
 rustls = "0.16"
 webpki-roots = "0.19.0"
