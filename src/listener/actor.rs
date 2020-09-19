@@ -9,6 +9,7 @@ use awc::{
 use bytes::Bytes;
 use futures::stream::SplitSink;
 use std::time::Duration;
+use std::io::{self, Write};
 
 pub struct Listener {
     pub id: String,
@@ -64,7 +65,8 @@ impl Handler<ClientCommand> for Listener {
 impl StreamHandler<Result<Frame, WsProtocolError>> for Listener {
     fn handle(&mut self, msg: Result<Frame, WsProtocolError>, _: &mut Context<Self>) {
         if let Ok(Frame::Text(txt)) = msg {
-            println!("{}", std::str::from_utf8(&txt).unwrap())
+            print!("{}", std::str::from_utf8(&txt).unwrap());
+            io::stdout().flush().unwrap();
         }
     }
 
