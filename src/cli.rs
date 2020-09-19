@@ -9,7 +9,7 @@ pub fn matches<'a, 'b>() -> clap::App<'a, 'b> {
                 clap::Arg::with_name("session-id")
                     .short("i")
                     .long("session-id")
-                    .help("Webout stream session identifier")
+                    .help("Session identifier")
                     .takes_value(true)
                     .required(true),
             ),
