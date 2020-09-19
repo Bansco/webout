@@ -4,7 +4,9 @@ use std::process::ExitStatus;
 use tokio::fs::File;
 use tokio::process;
 
+mod cli;
 mod emitter;
+mod listener;
 mod ws_client;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -27,13 +29,32 @@ enum WeboutExitReason {
 
 #[tokio::main]
 async fn main() {
-    // TODO: Use actix HTTP client to avoid an extra dependency
+    let args = cli::matches().get_matches();
+
+    match args.subcommand() {
+        ("stream", Some(_subcommand)) => {
+            stream().await;
+        }, 
+        ("watch", Some(subcommand)) => {
+            // Safe to unwrap because is a required arg attribute
+            let session_id = subcommand
+                .value_of("session-id")
+                .unwrap()
+                .to_owned();
+
+            watch(session_id).await;
+        }
+        _ => {}
+    };
+}
+
+async fn stream() {
     let session: Session = reqwest::get("http://localhost:9000/api/session/create")
         .await
-        .unwrap()
+        .expect("Failed to connect to Webout servers")
         .json()
         .await
-        .unwrap();
+        .expect("Failed to read Webout server response");
 
     let session_log_name = session.get_log_name();
 
@@ -73,7 +94,7 @@ async fn main() {
                 std::process::exit(0);
             } else {
                 println!("Webout process terminated unexpectally");
-                std::process::exit(1);
+                std::process::exit(status.code().unwrap_or(1));
             }
         }
     }
@@ -94,4 +115,12 @@ async fn spawn_input_listener(session_log_name: &String) -> Result<ExitStatus, s
         .spawn()
         .expect("Failed to spawn script command")
         .await
+}
+
+async fn watch(session_id: String) {
+    let listener_system = tokio::task::spawn_blocking(move || {
+        listener::system::spawn(session_id);
+    });
+
+    listener_system.await.unwrap();
 }
