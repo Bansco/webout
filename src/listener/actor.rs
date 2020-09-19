@@ -64,7 +64,7 @@ impl Handler<ClientCommand> for Listener {
 impl StreamHandler<Result<Frame, WsProtocolError>> for Listener {
     fn handle(&mut self, msg: Result<Frame, WsProtocolError>, _: &mut Context<Self>) {
         if let Ok(Frame::Text(txt)) = msg {
-            println!("{:?}", txt)
+            println!("{}", std::str::from_utf8(&txt).unwrap())
         }
     }
 
