@@ -5,7 +5,7 @@ pub fn matches<'a, 'b>() -> clap::App<'a, 'b> {
         .setting(clap::AppSettings::SubcommandRequiredElseHelp)
         .subcommand(clap::App::new("stream").about("Start streaming terminal session"))
         .subcommand(
-            clap::App::new("watch").about("Watch a Webout stream").arg(
+            clap::App::new("watch").about("Watch a session stream").arg(
                 clap::Arg::with_name("session-id")
                     .short("i")
                     .long("session-id")
