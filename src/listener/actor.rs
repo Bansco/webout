@@ -8,8 +8,8 @@ use awc::{
 };
 use bytes::Bytes;
 use futures::stream::SplitSink;
-use std::time::Duration;
 use std::io::{self, Write};
+use std::time::Duration;
 
 pub struct Listener {
     pub id: String,

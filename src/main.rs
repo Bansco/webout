@@ -34,13 +34,10 @@ async fn main() {
     match args.subcommand() {
         ("stream", Some(_subcommand)) => {
             stream().await;
-        }, 
+        }
         ("watch", Some(subcommand)) => {
             // Safe to unwrap because is a required arg attribute
-            let session_id = subcommand
-                .value_of("session-id")
-                .unwrap()
-                .to_owned();
+            let session_id = subcommand.value_of("session-id").unwrap().to_owned();
 
             watch(session_id).await;
         }
