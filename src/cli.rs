@@ -7,8 +7,7 @@ pub fn matches<'a, 'b>() -> clap::App<'a, 'b> {
         .subcommand(
             clap::App::new("watch").about("Watch a session stream").arg(
                 clap::Arg::with_name("session-id")
-                    .short("i")
-                    .long("session-id")
+                    .index(1)
                     .help("Session identifier")
                     .takes_value(true)
                     .required(true),
