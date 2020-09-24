@@ -12,7 +12,11 @@ pub fn spawn(session_id: String) {
     let system = System::new("webout-listener-system");
 
     Arbiter::spawn(async move {
-        let wss_url = format!("http://localhost:9000/api/session/ws/{}", &session_id);
+        let wss_url = format!(
+            "{}/api/session/ws/{}",
+            crate::constants::SERVER_URL,
+            &session_id
+        );
 
         let client = ws_client::create_client();
         let (_response, framed) = client
@@ -34,5 +38,5 @@ pub fn spawn(session_id: String) {
         });
     });
 
-    system.run().unwrap();
+    system.run().expect("Failed to run Webout watch process");
 }

@@ -19,15 +19,10 @@ impl Actor for Emitter {
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Context<Self>) {
-        println!("Actor started");
-        // start heartbeats otherwise server should disconnect after 10 seconds
         self.hb(ctx)
     }
 
     fn stopped(&mut self, _: &mut Context<Self>) {
-        println!("Actor stopped");
-
-        // Stop application on disconnect
         System::current().stop();
     }
 }
@@ -68,12 +63,9 @@ impl StreamHandler<Result<Frame, WsProtocolError>> for Emitter {
         }
     }
 
-    fn started(&mut self, _ctx: &mut Context<Self>) {
-        println!("Websocket connected");
-    }
+    fn started(&mut self, _ctx: &mut Context<Self>) {}
 
     fn finished(&mut self, ctx: &mut Context<Self>) {
-        println!("Websocket disconnected");
         ctx.stop();
     }
 }
@@ -87,12 +79,9 @@ impl StreamHandler<Result<bytes::BytesMut, std::io::Error>> for Emitter {
         self.sink.write(Message::Binary(bytes.into())).unwrap();
     }
 
-    fn started(&mut self, _ctx: &mut Context<Self>) {
-        println!("Log Emitter connected");
-    }
+    fn started(&mut self, _ctx: &mut Context<Self>) {}
 
     fn finished(&mut self, ctx: &mut Context<Self>) {
-        println!("Log Emitters disconnected");
         ctx.stop();
     }
 }

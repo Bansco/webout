@@ -20,15 +20,10 @@ impl Actor for Listener {
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Context<Self>) {
-        println!("Actor started");
-        // start heartbeats otherwise server should disconnect after 10 seconds
         self.hb(ctx)
     }
 
     fn stopped(&mut self, _: &mut Context<Self>) {
-        println!("Actor stopped");
-
-        // Stop application on disconnect
         System::current().stop();
     }
 }
@@ -52,7 +47,6 @@ impl Listener {
 #[rtype(result = "()")]
 struct ClientCommand(String);
 
-/// Handle stdin commands
 impl Handler<ClientCommand> for Listener {
     type Result = ();
 
@@ -61,21 +55,19 @@ impl Handler<ClientCommand> for Listener {
     }
 }
 
-/// Handle server websocket messages
 impl StreamHandler<Result<Frame, WsProtocolError>> for Listener {
     fn handle(&mut self, msg: Result<Frame, WsProtocolError>, _: &mut Context<Self>) {
-        if let Ok(Frame::Text(txt)) = msg {
-            print!("{}", std::str::from_utf8(&txt).unwrap());
-            io::stdout().flush().unwrap();
+        if let Ok(Frame::Text(chunk)) = msg {
+            print!("{}", String::from_utf8_lossy(&chunk));
+            io::stdout()
+                .flush()
+                .expect("Failed to flush stdout");
         }
     }
 
-    fn started(&mut self, _ctx: &mut Context<Self>) {
-        println!("Websocket connected");
-    }
+    fn started(&mut self, _ctx: &mut Context<Self>) {}
 
     fn finished(&mut self, ctx: &mut Context<Self>) {
-        println!("Websocket disconnected");
         ctx.stop();
     }
 }

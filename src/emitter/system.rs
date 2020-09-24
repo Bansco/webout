@@ -18,8 +18,10 @@ pub fn spawn(session: Session) {
 
     Arbiter::spawn(async move {
         let wss_url = format!(
-            "http://localhost:9000/api/session/ws/{}?token={}",
-            &session.id, session.token
+            "{}/api/session/ws/{}?token={}",
+            crate::constants::SERVER_URL,
+            &session.id,
+            session.token
         );
 
         let client = ws_client::create_client();
@@ -56,5 +58,5 @@ pub fn spawn(session: Session) {
         });
     });
 
-    system.run().unwrap();
+    system.run().expect("Failed to run Webout stream process");
 }
