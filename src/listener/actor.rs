@@ -59,9 +59,7 @@ impl StreamHandler<Result<Frame, WsProtocolError>> for Listener {
     fn handle(&mut self, msg: Result<Frame, WsProtocolError>, _: &mut Context<Self>) {
         if let Ok(Frame::Text(chunk)) = msg {
             print!("{}", String::from_utf8_lossy(&chunk));
-            io::stdout()
-                .flush()
-                .expect("Failed to flush stdout");
+            io::stdout().flush().expect("Failed to flush stdout");
         }
     }
 
