@@ -4,6 +4,7 @@ use std::process::ExitStatus;
 use tokio::fs::File;
 use tokio::process;
 
+mod constants;
 mod cli;
 mod emitter;
 mod listener;
@@ -38,15 +39,16 @@ async fn main() {
         ("watch", Some(subcommand)) => {
             // Safe to unwrap because is a required arg attribute
             let session_id = subcommand.value_of("session-id").unwrap().to_owned();
-
             watch(session_id).await;
         }
+        // Clap handles non "stream" and "watch" options
         _ => {}
     };
 }
 
 async fn stream() {
-    let session: Session = reqwest::get("http://localhost:9000/api/session/create")
+    let create_session_url = format!("{}/api/session/create", constants::SERVER_URL);
+    let session: Session = reqwest::get(create_session_url.as_str())
         .await
         .expect("Failed to connect to Webout servers")
         .json()
@@ -57,10 +59,9 @@ async fn stream() {
 
     File::create(&session_log_name)
         .await
-        .expect("Failed to create webout file");
+        .expect("Failed to create Webout file");
 
     println!("Webout session started");
-    println!("View online: {}", session.url); // TODO copy id / url to clipboard
     println!("Session id:  {}\n", session.id);
 
     let emitter_system = {
