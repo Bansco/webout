@@ -19,7 +19,9 @@ pub fn spawn(session: Session) {
     Arbiter::spawn(async move {
         let wss_url = format!(
             "{}/api/session/ws/{}?token={}",
-            crate::constants::SERVER_URL, &session.id, session.token
+            crate::constants::SERVER_URL,
+            &session.id,
+            session.token
         );
 
         let client = ws_client::create_client();

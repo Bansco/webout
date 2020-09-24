@@ -4,8 +4,8 @@ use std::process::ExitStatus;
 use tokio::fs::File;
 use tokio::process;
 
-mod constants;
 mod cli;
+mod constants;
 mod emitter;
 mod listener;
 mod ws_client;

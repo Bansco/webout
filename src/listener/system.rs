@@ -12,7 +12,11 @@ pub fn spawn(session_id: String) {
     let system = System::new("webout-listener-system");
 
     Arbiter::spawn(async move {
-        let wss_url = format!("{}/api/session/ws/{}", crate::constants::SERVER_URL, &session_id);
+        let wss_url = format!(
+            "{}/api/session/ws/{}",
+            crate::constants::SERVER_URL,
+            &session_id
+        );
 
         let client = ws_client::create_client();
         let (_response, framed) = client
