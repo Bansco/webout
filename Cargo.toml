@@ -9,7 +9,7 @@ repository = "https://github.com/bansco/webout"
 [dependencies]
 notify = "4.0.15"
 reqwest = { version = "0.10.8", features = ["blocking", "json"] }
-serde = { version = "1.0.115", features = ["derive"] }
+serde = { version = "1.0.116", features = ["derive"] }
 serde_json = "1.0.57"
 actix = "0.9.0"
 awc = { version = "1.0.1", features = ["rustls"] }
