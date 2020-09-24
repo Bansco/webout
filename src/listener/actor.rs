@@ -61,7 +61,7 @@ impl StreamHandler<Result<Frame, WsProtocolError>> for Listener {
             print!("{}", String::from_utf8_lossy(&chunk));
             io::stdout()
                 .flush()
-                .expect("Failed to flush stream bytes to stdout");
+                .expect("Failed to flush stdout");
         }
     }
 
