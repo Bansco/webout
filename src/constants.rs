@@ -1,1 +1,1 @@
-pub const SERVER_URL: &'static str = "http://localhost:9000";
+pub const SERVER_URL: &str = "http://localhost:9000";
