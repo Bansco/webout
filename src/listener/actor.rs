@@ -58,10 +58,7 @@ impl Handler<ClientCommand> for Listener {
 impl StreamHandler<Result<Frame, WsProtocolError>> for Listener {
     fn handle(&mut self, msg: Result<Frame, WsProtocolError>, _: &mut Context<Self>) {
         if let Ok(Frame::Text(chunk)) = msg {
-            print!(
-                "{}",
-                std::str::from_utf8(&chunk).expect("Failed to parse stream bytes to valid utf8")
-            );
+            print!("{}", String::from_utf8_lossy(&chunk));
             io::stdout()
                 .flush()
                 .expect("Failed to flush stream bytes to stdout");
