@@ -6,7 +6,7 @@
 
 ## Goals
 
-- Securely (e2e encrypted) stream a terminal session
+- Stream a terminal session
 - No support for full screen capture programs (top, vim or tmux)
 - Sessions are not persisted
 - CLI client to stream and watch a terminal session
