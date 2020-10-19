@@ -1,4 +1,4 @@
-pub fn matches<'a, 'b>() -> clap::App<'a, 'b> {
+pub fn prompt<'a, 'b>() -> clap::App<'a, 'b> {
     clap::App::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
         .about(env!("CARGO_PKG_DESCRIPTION"))

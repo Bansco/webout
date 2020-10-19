@@ -12,7 +12,7 @@ use crate::emitter::actor::Emitter;
 use crate::ws_client;
 use crate::Session;
 
-pub fn spawn(session: Session) {
+pub fn spawn(session: Session) -> Result<(), std::io::Error> {
     let session_log_name = session.get_log_name();
     let system = System::new("webout-emitter-system");
 
@@ -58,5 +58,5 @@ pub fn spawn(session: Session) {
         });
     });
 
-    system.run().expect("Failed to run Webout stream process");
+    system.run()
 }
