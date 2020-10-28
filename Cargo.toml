@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["ndelvalle <nicolas.delvalle@gmail.com>"]
 edition = "2018"
 readme = "README.md"
+description = "Stream a terminal session"
 repository = "https://github.com/bansco/webout"
 license = "MIT"
 homepage = "https://github.com/bansco/webout"
