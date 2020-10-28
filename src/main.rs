@@ -62,23 +62,27 @@ fn stream() {
 
     thread::spawn(move || {
         emitter::system::spawn(session.clone()).unwrap();
-        exit_emitter.send(WeboutExitReason::EmitterSystemStopped).unwrap();
+        exit_emitter
+            .send(WeboutExitReason::EmitterSystemStopped)
+            .unwrap();
     });
 
     thread::spawn(move || {
         let exit_status = spawn_input_listener(&session_log_name);
-        exit_listener.send(WeboutExitReason::InputListenerStopped(exit_status)).unwrap();
+        exit_listener
+            .send(WeboutExitReason::InputListenerStopped(exit_status))
+            .unwrap();
     });
 
     match on_exit.recv().expect("Webout terminated unexpectally") {
         WeboutExitReason::EmitterSystemStopped => {
             println!("Webout server connection terminated unexpectally");
             std::process::exit(1);
-        },
+        }
         WeboutExitReason::InputListenerStopped(Err(err)) => {
             println!("Webout terminated unexpectally. Error {}", err);
             std::process::exit(1);
-        },
+        }
         WeboutExitReason::InputListenerStopped(Ok(status)) => {
             if status.success() {
                 println!("Webout session ended! Bye :)");
@@ -87,7 +91,7 @@ fn stream() {
                 println!("Webout process terminated unexpectally");
                 std::process::exit(status.code().unwrap_or(1));
             }
-        },
+        }
     };
 }
 
