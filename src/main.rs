@@ -29,7 +29,6 @@ enum WeboutExitReason {
 
 fn main() {
     let args = cli::prompt().get_matches();
-
     match args.subcommand() {
         ("stream", Some(_subcommand)) => {
             stream();
@@ -37,7 +36,7 @@ fn main() {
         ("watch", Some(subcommand)) => {
             // Safe to unwrap because is a required arg attribute
             let session_id = subcommand.value_of("session-id").unwrap().to_owned();
-            // watch(session_id).await;
+            watch(session_id);
         }
         // Clap handles non "stream" and "watch" options
         _ => {}
@@ -55,7 +54,7 @@ fn stream() {
     File::create(&session_log_name).expect("Failed to create Webout file");
 
     println!("Webout session started");
-    println!("Session id:  {}\n", session.id);
+    println!("Session id: {}\n", session.id);
 
     let (exit, on_exit) = crossbeam_channel::bounded(1);
     let exit_emitter = exit.clone();
@@ -109,10 +108,10 @@ fn spawn_input_listener(session_log_name: &String) -> Result<ExitStatus, std::io
         .wait()
 }
 
-async fn watch(session_id: String) {
-    let listener_system = tokio::task::spawn_blocking(move || {
+fn watch(session_id: String) {
+    let system = thread::spawn(move || {
         listener::system::spawn(session_id);
     });
 
-    listener_system.await.unwrap();
+    system.join().unwrap();
 }
