@@ -40,11 +40,11 @@ pub fn spawn(session: Session) -> Result<(), std::io::Error> {
         command.arg(cmd);
         command.stdout(Stdio::piped());
 
-        let mut child = command.spawn().expect("failed to spawn command");
+        let mut child = command.spawn().expect("Failed to spawn command");
         let stdout = child
             .stdout
             .take()
-            .expect("child did not have a handle to stdout");
+            .expect("Child did not have a handle to stdout");
         let framed_stream = FramedRead::new(stdout, BytesCodec::new());
 
         let (sink, stream) = framed.split();
