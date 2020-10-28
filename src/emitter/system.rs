@@ -12,7 +12,7 @@ use crate::emitter::actor::Emitter;
 use crate::ws_client;
 use crate::Session;
 
-pub fn spawn(session: Session) {
+pub fn spawn(session: Session) -> Result<(), std::io::Error> {
     let session_log_name = session.get_log_name();
     let system = System::new("webout-emitter-system");
 
@@ -40,11 +40,11 @@ pub fn spawn(session: Session) {
         command.arg(cmd);
         command.stdout(Stdio::piped());
 
-        let mut child = command.spawn().expect("failed to spawn command");
+        let mut child = command.spawn().expect("Failed to spawn command");
         let stdout = child
             .stdout
             .take()
-            .expect("child did not have a handle to stdout");
+            .expect("Child did not have a handle to stdout");
         let framed_stream = FramedRead::new(stdout, BytesCodec::new());
 
         let (sink, stream) = framed.split();
@@ -58,5 +58,5 @@ pub fn spawn(session: Session) {
         });
     });
 
-    system.run().expect("Failed to run Webout stream process");
+    system.run()
 }

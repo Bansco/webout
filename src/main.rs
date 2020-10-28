@@ -1,8 +1,7 @@
-use futures::future::FutureExt;
 use serde::{Deserialize, Serialize};
+use std::fs::File;
 use std::process::ExitStatus;
-use tokio::fs::File;
-use tokio::process;
+use std::thread;
 
 mod cli;
 mod constants;
@@ -24,69 +23,67 @@ impl Session {
 }
 
 enum WeboutExitReason {
-    InputListenerStopped(ExitStatus),
+    InputListenerStopped(Result<ExitStatus, std::io::Error>),
     EmitterSystemStopped,
 }
 
-#[tokio::main]
-async fn main() {
-    let args = cli::matches().get_matches();
-
+fn main() {
+    let args = cli::prompt().get_matches();
     match args.subcommand() {
         ("stream", Some(_subcommand)) => {
-            stream().await;
+            stream();
         }
         ("watch", Some(subcommand)) => {
             // Safe to unwrap because is a required arg attribute
             let session_id = subcommand.value_of("session-id").unwrap().to_owned();
-            watch(session_id).await;
+            watch(session_id);
         }
         // Clap handles non "stream" and "watch" options
         _ => {}
     };
 }
 
-async fn stream() {
+fn stream() {
     let create_session_url = format!("{}/api/session/create", constants::SERVER_URL);
-    let session: Session = reqwest::get(create_session_url.as_str())
-        .await
+    let session: Session = reqwest::blocking::get(create_session_url.as_str())
         .expect("Failed to connect to Webout servers")
         .json()
-        .await
         .expect("Failed to read Webout server response");
 
     let session_log_name = session.get_log_name();
-
-    File::create(&session_log_name)
-        .await
-        .expect("Failed to create Webout file");
+    File::create(&session_log_name).expect("Failed to create Webout file");
 
     println!("Webout session started");
-    println!("Session id:  {}\n", session.id);
+    println!("Session id: {}\n", session.id);
 
-    let emitter_system = {
-        let session = session.clone();
-        tokio::task::spawn_blocking(move || {
-            emitter::system::spawn(session);
-        })
-    };
+    let (exit, on_exit) = crossbeam_channel::bounded(1);
+    let exit_emitter = exit.clone();
+    let exit_listener = exit.clone();
 
-    let input_listener = spawn_input_listener(&session_log_name);
+    thread::spawn(move || {
+        emitter::system::spawn(session.clone()).unwrap();
+        exit_emitter
+            .send(WeboutExitReason::EmitterSystemStopped)
+            .unwrap();
+    });
 
-    futures::pin_mut!(emitter_system);
-    futures::pin_mut!(input_listener);
+    thread::spawn(move || {
+        let exit_status = spawn_input_listener(&session_log_name);
+        exit_listener
+            .send(WeboutExitReason::InputListenerStopped(exit_status))
+            .unwrap();
+    });
 
-    let exit_reason = futures::select! {
-        _ = emitter_system.fuse() => WeboutExitReason::EmitterSystemStopped,
-        exit_status = input_listener.fuse() => WeboutExitReason::InputListenerStopped(exit_status.unwrap()),
-    };
-
-    match exit_reason {
+    match on_exit.recv().expect("Webout terminated unexpectally") {
         WeboutExitReason::EmitterSystemStopped => {
             println!("Webout server connection terminated unexpectally");
             std::process::exit(1);
         }
-        WeboutExitReason::InputListenerStopped(status) => {
+        WeboutExitReason::InputListenerStopped(Err(err)) => {
+            println!("Webout terminated unexpectally. Error {}", err);
+            std::process::exit(1);
+        }
+        WeboutExitReason::InputListenerStopped(Ok(status)) => {
             if status.success() {
                 println!("Webout session ended! Bye :)");
                 std::process::exit(0);
@@ -95,10 +92,10 @@ async fn stream() {
                 std::process::exit(status.code().unwrap_or(1));
             }
         }
-    }
+    };
 }
 
-async fn spawn_input_listener(session_log_name: &String) -> Result<ExitStatus, std::io::Error> {
+fn spawn_input_listener(session_log_name: &String) -> Result<ExitStatus, std::io::Error> {
     // -f: Immediately flush output after each write (-F on macOS).
     // -q: Run in quiet mode, omit the start, stop and command status messages.
     let cmd = if cfg!(target_os = "linux") {
@@ -107,18 +104,18 @@ async fn spawn_input_listener(session_log_name: &String) -> Result<ExitStatus, s
         format!("script -F -q {}", &session_log_name)
     };
 
-    process::Command::new("sh")
+    std::process::Command::new("sh")
         .arg("-c")
         .arg(cmd)
         .spawn()
         .expect("Failed to spawn script command")
-        .await
+        .wait()
 }
 
-async fn watch(session_id: String) {
-    let listener_system = tokio::task::spawn_blocking(move || {
+fn watch(session_id: String) {
+    let system = thread::spawn(move || {
         listener::system::spawn(session_id);
     });
 
-    listener_system.await.unwrap();
+    system.join().unwrap();
 }
