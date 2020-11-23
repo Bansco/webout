@@ -55,7 +55,7 @@ dependencies = [
  "futures",
  "http",
  "log",
- "rustls",
+ "rustls 0.16.0",
  "tokio-rustls",
  "trust-dns-proto 0.18.0-alpha.2",
  "trust-dns-resolver 0.18.0-alpha.2",
@@ -173,7 +173,7 @@ dependencies = [
  "either",
  "futures",
  "log",
- "rustls",
+ "rustls 0.16.0",
  "tokio-rustls",
  "webpki",
  "webpki-roots 0.17.0",
@@ -293,7 +293,7 @@ dependencies = [
  "mime",
  "percent-encoding",
  "rand",
- "rustls",
+ "rustls 0.16.0",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -333,6 +333,12 @@ name = "base64"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3441f0f7b02788e948e47f457ca01f1d7e6d92c693bc132c22b087d3141c03ff"
+
+[[package]]
+name = "base64"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
 name = "bitflags"
@@ -1478,6 +1484,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustls"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "064fd21ff87c6e87ed4506e68beb42459caa4a0e2eb144932e6776768556980b"
+dependencies = [
+ "base64 0.13.0",
+ "log",
+ "ring",
+ "sct",
+ "webpki",
+]
+
+[[package]]
 name = "ryu"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1758,7 +1777,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3068d891551949b37681724d6b73666787cc63fa8e255c812a41d2513aff9775"
 dependencies = [
  "futures-core",
- "rustls",
+ "rustls 0.16.0",
  "tokio",
  "webpki",
 ]
@@ -2106,7 +2125,7 @@ dependencies = [
  "crossbeam-channel 0.5.0",
  "futures",
  "reqwest",
- "rustls",
+ "rustls 0.19.0",
  "serde",
  "serde_json",
  "tokio",
